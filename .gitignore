@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.venv/
+venv/
+.env
+logs/*.log
+logs/*.json
+logs/*.txt
+*.db
+.DS_Store
+.idea/
+.vscode/
+.airflow/
