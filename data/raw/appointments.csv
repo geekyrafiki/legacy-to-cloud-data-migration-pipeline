@@ -1,0 +1,5 @@
+appointment_id,patient_id,appointment_date,appointment_status,provider_name
+1001,1,2025-01-15 09:00:00,completed,dr. brown
+1002,2,2025-01-16 10:30:00,cancelled,dr. green
+1003,99,2025-01-17 11:00:00,completed,dr. adams
+1004,4,2025-01-18 14:00:00,no show,dr. brown

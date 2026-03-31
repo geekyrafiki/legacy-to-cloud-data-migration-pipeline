@@ -1,0 +1,6 @@
+legacy_patient_id,fname,lname,dob,sex,email
+1,john,doe,1985-01-10,M,JOHN.DOE@email.com
+2,jane,smith,1990/03/22,F,jane.smith@email.com
+3,maria,lopez,1978-07-15,F,maria.lopez@email.com
+3,maria,lopez,1978-07-15,F,maria.lopez@email.com
+4,mark,johnson,not_a_date,M,MARK.JOHNSON@email.com
