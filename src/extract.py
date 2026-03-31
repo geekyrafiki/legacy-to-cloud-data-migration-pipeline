@@ -1,31 +1,25 @@
-from pathlib import Path
-
 import pandas as pd
-from sqlalchemy import text
+from src.utils.db import get_engine
+from src.utils.logger import get_logger
 
-from src.utils.config_loader import load_yaml_config
-from src.utils.db import get_engine, get_schema_name
+LOGGER = get_logger()
+
+SQL_QUERIES = {
+    "patients": "SELECT * FROM legacy.legacy_patients",
+    "appointments": "SELECT * FROM legacy.legacy_appointments",
+    "billing_transactions": "SELECT * FROM legacy.legacy_billing_transactions",
+}
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-FIELD_MAPPINGS_PATH = PROJECT_ROOT / "config" / "field_mappings.yaml"
-SOURCE_CONFIG_PATH = PROJECT_ROOT / "config" / "source_config.yaml"
-
-
-def extract_postgres_data(
-    source_config_path: str | Path = SOURCE_CONFIG_PATH,
-    field_mappings_path: str | Path = FIELD_MAPPINGS_PATH,
-) -> dict[str, pd.DataFrame]:
-    field_mappings = load_yaml_config(field_mappings_path)
-    engine = get_engine(source_config_path)
-    source_schema = get_schema_name(source_config_path)
-
+def extract_postgres_data() -> dict[str, pd.DataFrame]:
+    LOGGER.info("Extracting source data from legacy schema.")
     extracted_data: dict[str, pd.DataFrame] = {}
 
+    engine = get_engine()
+
     with engine.connect() as connection:
-        for dataset_name, dataset_config in field_mappings.items():
-            source_table = dataset_config["source_table"]
-            query = text(f"SELECT * FROM {source_schema}.{source_table}")
+        for dataset_name, query in SQL_QUERIES.items():
+            LOGGER.info(f"Running extract query for {dataset_name}.")
             extracted_data[dataset_name] = pd.read_sql(query, connection)
 
     return extracted_data
