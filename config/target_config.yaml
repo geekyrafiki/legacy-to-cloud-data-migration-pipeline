@@ -4,3 +4,4 @@ database:
   dbname: migration_db
   user: postgres
   password: postgres
+  schema: warehouse

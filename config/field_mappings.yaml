@@ -1,0 +1,47 @@
+patients:
+  source_table: legacy_patients
+  target_table: dim_patient
+  primary_key: patient_id
+  required_columns:
+    - patient_id
+  column_mapping:
+    legacy_patient_id: patient_id
+    fname: first_name
+    lname: last_name
+    dob: date_of_birth
+    sex: gender
+    email: email
+
+appointments:
+  source_table: legacy_appointments
+  target_table: fact_appointment
+  primary_key: appointment_id
+  required_columns:
+    - appointment_id
+    - patient_id
+  foreign_key:
+    parent_dataset: patients
+    parent_key: patient_id
+  column_mapping:
+    appointment_id: appointment_id
+    patient_id: patient_id
+    appointment_date: appointment_date
+    appointment_status: appointment_status
+    provider_name: provider_name
+
+billing_transactions:
+  source_table: legacy_billing_transactions
+  target_table: fact_billing
+  primary_key: billing_id
+  required_columns:
+    - billing_id
+    - patient_id
+  foreign_key:
+    parent_dataset: patients
+    parent_key: patient_id
+  column_mapping:
+    billing_id: billing_id
+    patient_id: patient_id
+    billing_date: billing_date
+    amount: amount
+    procedure_code: procedure_code
