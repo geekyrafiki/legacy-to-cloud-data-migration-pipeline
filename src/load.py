@@ -40,6 +40,8 @@ def load_dataframes_to_postgres(dataframes: dict[str, object]) -> None:
     LOGGER.info("Loading transformed data into warehouse schema.")
     engine = get_engine()
 
+    tables = dataframes["clean_tables"] if "clean_tables" in dataframes else dataframes
+
     load_order = [
         ("dim_patient", "dim_patient"),
         ("fact_appointment", "fact_appointment"),
@@ -47,7 +49,7 @@ def load_dataframes_to_postgres(dataframes: dict[str, object]) -> None:
     ]
 
     for dataframe_name, target_table in load_order:
-        df = dataframes[dataframe_name]
+        df = tables[dataframe_name]
         LOGGER.info(f"Appending {len(df)} rows into warehouse.{target_table}")
 
         df.to_sql(

@@ -34,7 +34,11 @@ def transform_all_data(source_data: dict[str, pd.DataFrame]) -> dict[str, pd.Dat
         patients_df["date_of_birth"], errors="coerce"
     ).dt.date
 
-    patients_df = patients_df.drop_duplicates(subset=["patient_id"])
+    rejected_patients_duplicates = patients_df[
+        patients_df.duplicated(subset=["patient_id"], keep="first")
+    ].copy()
+
+    patients_df = patients_df.drop_duplicates(subset=["patient_id"], keep="first")
 
     dim_patient = patients_df[[
         "patient_id",
@@ -44,6 +48,8 @@ def transform_all_data(source_data: dict[str, pd.DataFrame]) -> dict[str, pd.Dat
         "gender",
         "email"
     ]].copy()
+
+    valid_patient_ids = set(dim_patient["patient_id"].tolist())
 
     # -------------------------
     # Transform appointments
@@ -61,12 +67,15 @@ def transform_all_data(source_data: dict[str, pd.DataFrame]) -> dict[str, pd.Dat
         appointments_df["provider_name"].astype(str).str.strip().str.title()
     )
 
-    valid_patient_ids = set(dim_patient["patient_id"].tolist())
+    rejected_appointments = appointments_df[
+        ~appointments_df["patient_id"].isin(valid_patient_ids)
+    ].copy()
+
     appointments_df = appointments_df[
         appointments_df["patient_id"].isin(valid_patient_ids)
     ].copy()
 
-    appointments_df = appointments_df.drop_duplicates(subset=["appointment_id"])
+    appointments_df = appointments_df.drop_duplicates(subset=["appointment_id"], keep="first")
 
     fact_appointment = appointments_df[[
         "appointment_id",
@@ -93,11 +102,15 @@ def transform_all_data(source_data: dict[str, pd.DataFrame]) -> dict[str, pd.Dat
         billing_df["procedure_code"].astype(str).str.strip().str.upper()
     )
 
+    rejected_billing = billing_df[
+        ~billing_df["patient_id"].isin(valid_patient_ids)
+    ].copy()
+
     billing_df = billing_df[
         billing_df["patient_id"].isin(valid_patient_ids)
     ].copy()
 
-    billing_df = billing_df.drop_duplicates(subset=["billing_id"])
+    billing_df = billing_df.drop_duplicates(subset=["billing_id"], keep="first")
 
     fact_billing = billing_df[[
         "billing_id",
@@ -107,7 +120,21 @@ def transform_all_data(source_data: dict[str, pd.DataFrame]) -> dict[str, pd.Dat
         "procedure_code"
     ]].copy()
 
+    clean_tables = {
+        "dim_patient": dim_patient,
+        "fact_appointment": fact_appointment,
+        "fact_billing": fact_billing,
+    }
+
+    rejected_tables = {
+        "rejected_patients_duplicates": rejected_patients_duplicates,
+        "rejected_appointments_invalid_fk": rejected_appointments,
+        "rejected_billing_transactions_invalid_fk": rejected_billing,
+    }
+
     return {
+        "clean_tables": clean_tables,
+        "rejected_tables": rejected_tables,
         "dim_patient": dim_patient,
         "fact_appointment": fact_appointment,
         "fact_billing": fact_billing,
